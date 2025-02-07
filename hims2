@@ -1,0 +1,151 @@
+---- Hospital information management system(HIMS)-------
+
+USE MASTER
+
+go
+
+-- Drop database if it exists
+IF EXISTS (SELECT * FROM sys.databases WHERE name = 'hims')
+BEGIN
+    DROP DATABASE hims;
+END;
+
+CREATE DATABASE hims;
+
+GO  -- Important: Add GO after database creation
+
+USE hims;  -- Switch to the newly created database
+
+-- Create Patient table
+CREATE TABLE Patient (
+    patient_id INT PRIMARY KEY,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
+    dob DATE NOT NULL,
+    gender VARCHAR(10) NOT NULL,
+    address TEXT,
+    phone VARCHAR(20),
+    insurance_info TEXT
+);
+
+-- Create Doctor table
+CREATE TABLE Doctor (
+    doctor_id INT PRIMARY KEY,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
+    specialization VARCHAR(255) NOT NULL,
+    schedule TEXT
+);
+
+-- Create Appointment table
+CREATE TABLE Appointment (
+    appointment_id INT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    doctor_id INT NOT NULL,
+    appointment_date DATETIME NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    FOREIGN KEY (patient_id) REFERENCES Patient(patient_id),
+    FOREIGN KEY (doctor_id) REFERENCES Doctor(doctor_id)
+);
+
+-- Create Billing table
+CREATE TABLE Billing (
+    billing_id INT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    billing_date DATE NOT NULL,
+    payment_status VARCHAR(50) NOT NULL,
+    FOREIGN KEY (patient_id) REFERENCES Patient(patient_id)
+);
+
+-- Create Inventory table
+CREATE TABLE Inventory (
+    inventory_id INT PRIMARY KEY,
+    item_name VARCHAR(255) NOT NULL,
+    quantity INT NOT NULL,
+    expiration_date DATE
+);
+
+
+-- Insert data into Patient table
+INSERT INTO Patient (patient_id, first_name, last_name, dob, gender, address, phone, insurance_info) VALUES
+(101, 'Sharath', 'Kumar', '2011-08-16', 'Male', 'Mangalore', '9880856', 'Yes'),
+(102, 'Kumar', 'Sharath', '2013-09-15', 'Male', 'Mangalore', '896858', 'No'),
+(103, 'Shravya', 'Poojary', '2008-02-25', 'Female', 'Goa', '125828', 'Yes'),
+(104, 'James', 'Shetty', '2015-08-16', 'Male', 'Mangalore', '9880856', 'Yes'),
+(105, 'Jim', 'Snake', '2019-09-15', 'Male', 'Mangalore', '896858', 'No'),
+(106, 'Bob', 'Poojary', '1996-02-25', 'Other', 'Goa', '125828', 'Yes'),
+(107,'Varun','MT','2007-02-04','Male','UK','125369','No'),
+(1, 'Anil', 'Kumar', '1990-02-15', 'Male', '1234 Elm St, Bengaluru, Karnataka', '9876543210', 'Insurance Co A, Policy #12345'),
+(2, 'Priya', 'Sharma', '1985-07-10', 'Female', '5678 Maple Ave, Mangaluru, Karnataka', '9123456780', 'Insurance Co B, Policy #67890'),
+-- ... (rest of the patient inserts)
+(25, 'Ajay', 'Bhatt', '1987-11-09', 'Male', '7416 Oak St, Bengaluru, Karnataka', '9923456783', 'Insurance Co Y, Policy #67856');
+
+
+
+-- Insert data into Doctor table
+INSERT INTO Doctor (doctor_id, first_name, last_name, specialization, schedule) VALUES
+(101, 'Sanjay', 'Patel', 'Cardiology', 'Mon-Fri: 9am-5pm'),
+(102, 'Reema', 'Sharma', 'Dermatology', 'Tue-Thu: 10am-4pm'),
+-- ... (rest of the doctor inserts)
+(110, 'Divya', 'Verma', 'Psychiatry', 'Tue-Fri: 11am-6pm');
+
+-- Insert data into Inventory table
+INSERT INTO Inventory (inventory_id, item_name, quantity, expiration_date) VALUES
+(1, 'Bandages', 50, '2025-12-31'),
+(2, 'Antibiotic Ointment', 30, '2025-11-30'),
+-- ... (rest of the inventory inserts)
+(25, 'Splints', 30, '2026-05-10');
+
+
+-- Insert data into Appointment table
+INSERT INTO Appointment (appointment_id, patient_id, doctor_id, appointment_date, status) VALUES
+(1, 1, 101, '2025-01-01 09:00:00', 'Scheduled'),
+(2, 2, 102, '2025-01-01 10:00:00', 'Completed'),
+-- ... (rest of the appointment inserts)
+(77, 2, 107, '2025-01-08 15:00:00', 'Scheduled');
+
+
+-- Example Trigger:  A trigger to prevent scheduling appointments for a doctor who is already booked at that time.
+
+CREATE TRIGGER trg_PreventDoctorDoubleBooking
+ON Appointment
+FOR INSERT, UPDATE
+AS
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM inserted i  -- The inserted row(s)
+        INNER JOIN Appointment a ON i.doctor_id = a.doctor_id AND i.appointment_date = a.appointment_date AND a.appointment_id <> i.appointment_id -- Exclude the current appointment being updated
+    )
+    BEGIN
+        RAISERROR('Doctor is already booked at that time.', 16, 1)
+        ROLLBACK TRANSACTION  -- Prevent the insert/update
+        RETURN
+    END
+END;
+GO
+
+
+-- Test the trigger (try to insert an appointment for a doctor who is already booked)
+-- Example: Dr. Patel (doctor_id 101) has an appointment at 9:00 AM on 2025-01-01.  Try to insert another.
+--INSERT INTO Appointment (appointment_id, patient_id, doctor_id, appointment_date, status)
+--VALUES (999, 5, 101, '2025-01-01 09:00:00', 'Scheduled');  -- This should fail because of the trigger.
+
+--Retrieve data examples
+SELECT * FROM Doctor WHERE last_name='Rao';
+
+--Update Inventory Example
+UPDATE Inventory
+SET quantity = 60, expiration_date = '2026-01-31'
+WHERE inventory_id = 1;
+
+SELECT * FROM Inventory WHERE inventory_id = 1;
+
+
+-- Select statements to view the data
+SELECT * FROM Patient;
+SELECT * FROM Appointment;
+SELECT * FROM Billing;
+SELECT * FROM Inventory;
+SELECT * FROM Doctor;
