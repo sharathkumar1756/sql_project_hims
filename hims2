@@ -67,6 +67,30 @@ CREATE TABLE Inventory (
 );
 
 
+
+CREATE TABLE Prescription (
+    prescription_id INT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    doctor_id INT NOT NULL,
+    date_issued DATE NOT NULL,
+    medication_details TEXT NOT NULL,
+    dosage_instructions TEXT NOT NULL,
+    FOREIGN KEY (patient_id) REFERENCES Patient(patient_id),
+    FOREIGN KEY (doctor_id) REFERENCES Doctor(doctor_id)
+);
+
+
+
+CREATE TABLE Staff (
+    staff_id INT PRIMARY KEY,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
+    role VARCHAR(255) NOT NULL,
+    contact_info TEXT,
+    hire_date DATE NOT NULL
+);
+
+
 -- Insert data into Patient table
 INSERT INTO Patient (patient_id, first_name, last_name, dob, gender, address, phone, insurance_info) VALUES
 (101, 'Sharath', 'Kumar', '2011-08-16', 'Male', 'Mangalore', '9880856', 'Yes'),
@@ -104,6 +128,34 @@ INSERT INTO Appointment (appointment_id, patient_id, doctor_id, appointment_date
 (2, 2, 102, '2025-01-01 10:00:00', 'Completed'),
 -- ... (rest of the appointment inserts)
 (77, 2, 107, '2025-01-08 15:00:00', 'Scheduled');
+
+
+INSERT INTO Staff (staff_id, first_name, last_name, role, contact_info, hire_date)
+VALUES
+(1, 'John', 'Doe', 'Nurse', 'john.doe@example.com', '2021-01-15'),
+(2, 'Jane', 'Smith', 'Doctor', 'jane.smith@example.com', '2020-03-22'),
+(3, 'David', 'Brown', 'Receptionist', 'david.brown@example.com', '2022-07-10'),
+(4, 'Emily', 'Johnson', 'Lab Technician', 'emily.johnson@example.com', '2019-05-18'),
+(5, 'Michael', 'Clark', 'Pharmacist', 'michael.clark@example.com', '2018-09-05'),
+(6, 'Laura', 'Wilson', 'Surgeon', 'laura.wilson@example.com', '2021-12-01'),
+(7, 'Daniel', 'Garcia', 'Administrator', 'daniel.garcia@example.com', '2020-11-25'),
+(8, 'Sophia', 'Martinez', 'Cleaner', 'sophia.martinez@example.com', '2023-02-14'),
+(9, 'James', 'Rodriguez', 'Paramedic', 'james.rodriguez@example.com', '2021-06-30'),
+(10, 'Mia', 'Davis', 'Therapist', 'mia.davis@example.com', '2019-08-20');
+
+
+INSERT INTO Prescription (prescription_id, patient_id, doctor_id, date_issued, medication_details, dosage_instructions)
+VALUES
+(1, 101, 201, '2025-03-01', 'Paracetamol 500mg', 'Take one tablet every 8 hours for 3 days.'),
+(2, 102, 202, '2025-03-02', 'Ibuprofen 400mg', 'Take one tablet every 6 hours after meals for 5 days.'),
+(3, 103, 203, '2025-03-03', 'Amoxicillin 250mg', 'Take one capsule every 8 hours for 7 days.'),
+(4, 104, 204, '2025-03-04', 'Cough Syrup', 'Take 2 teaspoons twice daily after meals for 7 days.'),
+(5, 105, 205, '2025-03-05', 'Vitamin C 500mg', 'Take one tablet daily for 2 weeks.'),
+(6, 106, 206, '2025-03-06', 'Cetirizine 10mg', 'Take one tablet at bedtime for 5 days.'),
+(7, 107, 207, '2025-03-07', 'Insulin Injection', 'Inject as per doctor’s instructions before meals.'),
+(8, 108, 208, '2025-03-08', 'Losartan 50mg', 'Take one tablet in the morning daily.'),
+(9, 109, 209, '2025-03-09', 'Omeprazole 20mg', 'Take one capsule before breakfast for 2 weeks.'),
+(10, 110, 210, '2025-03-10', 'Salbutamol Inhaler', 'Use as needed for asthma symptoms.');
 
 
 -- Example Trigger:  A trigger to prevent scheduling appointments for a doctor who is already booked at that time.
